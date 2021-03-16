@@ -14,31 +14,31 @@ library(tidytext)
 url_city <- 'https://www.beeradvocate.com/place/city/74/'
 
 # get url links to brewers
-brewers_abs_urls <- weblink_scrap(link = url_city)  #using ralger
-brewers_abs_urls <- brewers_abs_urls[(str_sub(brewers_abs_urls,1,14)=='/beer/profile/')]
+brewers_abs_urls <- weblink_scrap(link = url_city)  #using ralger to get all urls on page
+brewers_abs_urls <- brewers_abs_urls[(str_sub(brewers_abs_urls,1,14)=='/beer/profile/')] #get breweries only
 brewers_abs_urls <- brewers_abs_urls[(str_sub(brewers_abs_urls,-1,-1)=='/')]
 brewers_abs_urls <- brewers_abs_urls[!is.na(brewers_abs_urls)]
 brewers_abs_urls <- unique(brewers_abs_urls) %>% 
-  url_absolute(url_city)
+  url_absolute(url_city)  #add back the domain name
 
 brewers_all <- data.frame(brewers_abs_urls)
 
 # --------------------------------------------------------------------------------------
 # Brewer Pages
 
-# get website
+# get websites of each brewer
 #url_brewer <- 'https://www.beeradvocate.com/beer/profile/30882/'  #orig test
 
 for (i in 1:nrow(brewers_all)) {
-  url_brewer <- brewers_all[i,1]  
-  html_brewer <- read_html(url_brewer)
+  url_brewer <- brewers_all[i,1]         #get each website
+  html_brewer <- read_html(url_brewer)   #read each website
   
   #get lists
-  brewer <- html_nodes(html_brewer, 'h1')
+  brewer <- html_nodes(html_brewer, 'h1')        #brewer name
   brewer_txt <- html_text(brewer, trim = TRUE)
-  beers <- html_nodes(html_brewer, 'a b')
+  beers <- html_nodes(html_brewer, 'a b')        #list of beers
   if (length(beers) > 0 ) {
-    beers_txt <- html_text(beers, trim = TRUE)
+    beers_txt <- html_text(beers, trim = TRUE)                             #beer data
     styles <-html_nodes(html_brewer, '.hr_bottom_light:nth-child(2) a')
     styles_txt <- html_text(styles, trim = TRUE)
     ratings <- html_nodes(html_brewer, '.hr_bottom_light:nth-child(4) b')
@@ -54,7 +54,7 @@ for (i in 1:nrow(brewers_all)) {
     beers_abs_urls <- beers_abs_urls4 %>% 
       url_absolute(url_brewer)
     
-    #combine lists into dataframe
+    #combine lists into dataframe of beers
     if (i==1) {
       beers_all <- data.frame(beers_txt,styles_txt,ratings_txt,avg_txt,beers_abs_urls)
       beers_all$brewer <- brewer_txt
@@ -74,11 +74,11 @@ for (i in 1:nrow(brewers_all)) {
 beers_all_ratings <- filter(beers_all, ratings_txt >= 1)
 for (i in 1:nrow(beers_all_ratings)) {
   tryCatch( {                                             # if error, keep working
-    url_ind_beer <- beers_all_ratings[i,'beers_abs_urls']  
+    url_ind_beer <- beers_all_ratings[i,'beers_abs_urls']     #get each beer website
     html_ind_beer <- read_html(url_ind_beer)
     review <- html_nodes(html_ind_beer, xpath=paste(selectr::css_to_xpath("#rating_fullview_content_2"), "/text()")) 
 
-    # create dataframe
+    # create dataframe of beer reviews
     if (i==1) {
       review_txt <- data.frame(html_text(review, trim = TRUE)) %>% 
         rename(ind_beer_comment=1) %>%
@@ -173,14 +173,14 @@ style_plot_count <- ggplot(data=beer_style, aes(x=reorder(styles_txt, style_coun
 top10_count <- slice_max(beer_style,style_count,n=10)
 top10_rating <- slice_max(beer_style,style_mean,n=10)
 
-# Group by Style Category
+#Group by Style Category
 beer_category <- beer_style %>%
   group_by(style_hdr) %>%
   summarize(style_count = sum(style_count), style_mean = round(mean(style_mean, na.rm = TRUE),2)) %>%
   mutate(rank_count = min_rank(desc(style_count))) %>%
   mutate(rank_rating = min_rank(desc(style_mean)))
 
-# Graphing Style Category
+#Graphing Style Category
 categ_plot_avg <- ggplot(data=beer_category, aes(x=reorder(style_hdr, style_mean), y=style_mean, fill=style_hdr)) +
   geom_bar(stat="identity") + 
   theme_classic() +
@@ -209,7 +209,7 @@ categ_plot_count <- ggplot(data=beer_category, aes(x=reorder(style_hdr, style_co
   labs(title="San Antonio Brews: Style Category Counts", x="Style Category\n", y = "Count")
 
 
-# Tables
+#Tables
 style_table <- beer_style %>% 
   rename(Style=1, Count=2, Count_Rank=5, Avg_Rating=3, Rating_Rank=6,Style_Category=4) %>%
   relocate(Count_Rank, .after = Count) %>%
@@ -241,9 +241,9 @@ brewer_table <- brewers_list %>%
 #print(brewer_table, preview = "pptx")
 
 # --------------------------------------------------------------------------------------
-# Text Analysis
+#Text Analysis
 
-# Beer Names
+#Beer Names
 name_analysis = Corpus(VectorSource(beers_all$beers_txt)) %>%
   tm_map(removePunctuation) %>%
   tm_map(content_transformer(tolower)) %>%
@@ -267,7 +267,7 @@ head(d, 100)
 d_freq <- filter(d,freq >= 3)
 wc_name <- wordcloud2(d_freq, size=.6, shape="triangle",rotateRatio = 0.5)
 
-# Reviews
+#Reviews
 review_txt <- review_txt %>%
   left_join(styles_combined, by = c("ind_beer_style" = "styles_txt"))
 
@@ -335,7 +335,7 @@ freq_2word_stout <- review_txt_stout %>%
   count(word1, word2, sort = TRUE) %>%
   unite(word, word1, word2, sep = " ")
 
-# Table compare 2-Word Ngrams
+#Table compare 2-Word Ngrams
 top7_count_pale <- slice_max(freq_2word_pale,n,n=10) %>% 
   filter(word!="pale ale") %>%
   filter(word!="san antonio") %>%
