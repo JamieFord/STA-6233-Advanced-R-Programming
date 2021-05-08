@@ -1,0 +1,485 @@
+---
+title: "NORTHSIDE ISD HIGH SCHOOL GRADUATES TO LOCAL HIGHER ED"
+output: 
+  flexdashboard::flex_dashboard
+---
+
+Page 1: Introduction  {data-orientation=columns}
+===================================== 
+Column {data-width=400}
+-------------------------------------  
+James Ford  
+STA 6233: Advanced R Programming  
+Spring 2021   
+<hr>
+
+### **Background**
+
+This report analyzes the high school graduates from Northside ISD (NISD) in San Antonio and the extent to which they enrolled in college locally.  
+
+Data was downloaded from the Texas Higher Education Coordinating Board (THECB) for Class of 2017 - 2019 high school graduates, as well as 6-year college degree completion rates.  
+
+The following pages detail the data results.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r, echo = FALSE, warning = FALSE, error = FALSE, include=FALSE}
+library(leaflet)
+library(tigris)
+
+
+# Make Icons
+hs <- makeIcon(iconUrl = "school-icon.png",
+               iconWidth = 15, iconHeight = 15,
+               iconAnchorX = 9, iconAnchorY = 9,
+               #shadowUrl = "http://leafletjs.com/examples/custom-icons/leaf-shadow.png",
+               #shadowWidth = 50, shadowHeight = 64,
+               #shadowAnchorX = 4, shadowAnchorY = 62
+)
+
+college <- makeIcon(iconUrl = "university-icon.png",
+                    iconWidth = 20, iconHeight = 20,
+                    iconAnchorX = 9, iconAnchorY = 9,
+                    #shadowUrl = "http://leafletjs.com/examples/custom-icons/leaf-shadow.png",
+                    #shadowWidth = 50, shadowHeight = 64,
+                    #shadowAnchorX = 4, shadowAnchorY = 62
+)
+```
+
+```{r echo = FALSE, warning = FALSE, error = FALSE, include=FALSE}
+# Place Icons on Map
+school <- school_districts("TX", cb=TRUE) %>% 
+  leaflet() %>% 
+  #addTiles() %>% 
+  addProviderTiles("CartoDB.Positron") %>%
+  addPolygons(popup=~NAME,
+              fillColor = "white",
+              color = "black",
+              weight = 1,
+              highlight = highlightOptions(
+                weight = 3,
+                fillOpacity = 0,
+                color = "black",
+                opacity = 1.0,
+                bringToFront = TRUE,
+                sendToBack = TRUE) ) %>%
+  setView(lng=-98.6015932, lat=29.4905564, zoom = 10) %>%
+  addMarkers(lng=-98.6189, lat=29.5827, icon = college,
+             label ="UTSA", popup="<a href='https://www.utsa.edu'>UTSA</a>") %>%
+  addMarkers(lng=-98.704280577599, lat=29.472074401384, icon = college, label ="NW Vista College", popup="<a href='https://www.alamo.edu/nvc/'>NWV</a>") %>%
+  addMarkers(lng=-98.4943314, lat=29.446188, icon = college, label ="San Antonio College (SAC)", popup="<a href='https://www.alamo.edu/sac/'>SAC</a>") %>%
+  addMarkers(lng=-98.546252491408, lat=29.322890202361, icon = college, label ="Palo Alto College", popup="<a href='https://www.alamo.edu/pac/'>PAC</a>") %>%
+  addMarkers(lng=-98.453940998101, lat=29.41544254087, icon = college, label ="St. Philips College", popup="<a href='https://www.alamo.edu/spc/'>SPC</a>") %>%
+  addMarkers(lng=-98.5434, lat=29.3294, icon = college, label ="TAMU-SA", popup="<a href='https://www.tamusa.edu/'>TAMUSA</a>") %>%
+  addMarkers(lng=-98.562637, lat=29.453159, icon = college, label ="St. Mary's", popup="<a href='https://www.stmarytx.edu/'>StMU</a>") %>%
+  addMarkers(lng=-98.472252, lat=29.470289, icon = college, label ="Incarnate Word", popup="<a href='https://www.uiw.edu/'>IWC</a>") %>%
+  addMarkers(lng=-98.544159, lat=29.426729, icon = college, label ="OLLU", popup="<a href='https://www.ollusa.edu/'>OLLU</a>") %>%
+  addMarkers(lng=-98.617371, lat=29.46546, icon = hs, label ="Holmes HS", popup="<a href='https://www.nisd.net/holmes'>Holmes</a>") %>%
+  addMarkers(lng=-98.640387024304, lat=29.41885075216, icon = hs, label ="Jay HS", popup="<a href='https://www.nisd.net/jay'>Jay</a>") %>%
+  addMarkers(lng=-98.5837253, lat=29.5655711, icon = hs, label ="Clark HS", popup="<a href='https://www.nisd.net/clark'>Clark</a>") %>%
+  addMarkers(lng=-98.6202986, lat=29.5135634, icon = hs, label ="Marshall HS", popup="<a href='https://www.nisd.net/marshall'>Marshall</a>") %>%
+  addMarkers(lng=-98.720273, lat=29.500035, icon = hs, label ="Taft HS", popup="<a href='https://www.nisd.net/taft'>Taft</a>") %>%
+  addMarkers(lng=-98.6856206883, lat=29.5590895, icon = hs, label ="O'Connor HS", popup="<a href='https://www.nisd.net/oconnor'>O'Connor</a>") %>%
+  addMarkers(lng=-98.5752975 , lat=29.5216186, icon = hs, label ="Health Careers HS", popup="<a href='https://www.nisd.net/healthcareers'>HCHS</a>") %>%
+  addMarkers(lng=-98.7246428 , lat=29.457912, icon = hs, label ="Brennan HS", popup="<a href='https://www.nisd.net/brennan'>Brennan</a>") %>%
+  addMarkers(lng=-98.646286, lat=29.565452, icon = hs, label ="Brandeis HS", popup="<a href='https://www.nisd.net/brandeis'>Brandeis</a>") %>%
+  addMarkers(lng=-98.684628, lat=29.439971, icon = hs, label ="Stevens HS", popup="<a href='https://www.nisd.net/stevens'>Stevens</a>") %>%
+  addMarkers(lng=-98.770592, lat=29.509619, icon = hs, label ="Harlan HS", popup="<a href='https://www.nisd.net/harlan'>Harlan</a>") %>%
+  addMarkers(lng=-98.669920, lat=29.463730, icon = hs, label ="Warren HS", popup="<a href='https://www.nisd.net/warren'>Warren</a>") %>%
+  addMarkers(lng=-98.586130, lat=29.554580, icon = hs, label ="Chavez Excel Acad", popup="<a href='https://www.nisd.net/excel'>Excel</a>")
+```
+
+Column {data-width=600}
+-------------------------------------
+### **Map:** *Zoom in, mouse over, and click on icons (HS and College Campuses) and polygons (School Districts)*
+
+```{r echo = FALSE, warning = FALSE, error = FALSE}
+school
+```
+
+Page 2: NISD High Schools {data-orientation=columns}
+===================================== 
+
+Column {data-width=400}
+-------------------------------------
+
+```{r, echo = FALSE, warning = FALSE, error = FALSE, include=FALSE}
+
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(RColorBrewer)
+library(scales)
+library(plotly)
+library(knitr)
+library(kableExtra)
+library(parcats)
+library(easyalluvial)
+
+op <- options(gvis.plot.tag = "chart")
+
+# Read 2019 Master Enroll file
+HSGrads2019 <- read_excel("~/UTSA/Intro_to_R/HSGradsEnrolledCampus2019(1).xlsx", col_types = c("text", "text", "text", "text", "text", "numeric"))
+summary(HSGrads2019)
+
+# Total Grads Count
+TotGrads <- HSGrads2019 %>% 
+  filter(Institution=='Total high school graduates')
+
+#No College
+NoCollege <- HSGrads2019 %>% 
+  filter(Institution %in% c('Not trackable','Not found')) %>%
+  group_by(Name) %>%
+  summarize(Students=sum(Students))
+
+#Split into College/Univ dfs
+UTSA <- HSGrads2019 %>% 
+  filter(Institution=='U. OF TEXAS AT SAN ANTONIO (010115)')
+
+NWV <- HSGrads2019 %>% 
+  filter(Institution=='ALAMO CCD NW VISTA COLLEGE (000307)')
+
+SAC <- HSGrads2019 %>% 
+  filter(Institution=='ALAMO CCD SAN ANTONIO COLLEGE (009163)')
+
+PAC <- HSGrads2019 %>% 
+  filter(Institution=='ALAMO CCD PALO ALTO COLLEGE (023413)')
+
+SPC <- HSGrads2019 %>% 
+  filter(Institution=='ALAMO CCD ST. PHILIPS COLLEGE (003608)')
+
+TAMUSA <- HSGrads2019 %>% 
+  filter(Institution=='TEXAS A&M UNIV-SAN ANTONIO (042485)')
+
+IWC <- HSGrads2019 %>% 
+  filter(Institution=='UNIV OF THE INCARNATE WORD (003578)')
+
+StMU <- HSGrads2019 %>% 
+  filter(Institution=="ST. MARY'S UNIVERSITY (003623)")
+
+OLLU <- HSGrads2019 %>% 
+  filter(Institution=="OUR LADY OF THE LAKE UNIV/SA (003598)")
+
+District2019 <- data_frame(College=c("UTSA","NWV","PAC","SAC","SPC","TAMUSA","IWC","StMU","OLLU"),
+                           Year='2019',
+                           Enroll=c(sum(UTSA$Students),sum(NWV$Students),sum(PAC$Students),sum(SAC$Students),
+                                    sum(SPC$Students),sum(TAMUSA$Students),sum(IWC$Students),
+                                    sum(StMU$Students),sum(OLLU$Students)))
+
+# Merge into HS dfs
+HS2019 <- cbind.data.frame(UTSA$Name,UTSA$Students) %>%
+  rename(Name=1,UTSA=2)
+
+HS2019 <- left_join(HS2019,NWV) %>%
+  select(-County,-Code,-Institution,-District) %>%
+  rename(NWV=Students)
+
+HS2019 <- left_join(HS2019,PAC) %>%
+  select(-County,-Code,-Institution,-District) %>%
+  rename(PAC=Students)
+
+HS2019 <- left_join(HS2019,SAC) %>%
+  select(-County,-Code,-Institution,-District) %>%
+  rename(SAC=Students)
+
+HS2019 <- left_join(HS2019,SPC) %>%
+  select(-County,-Code,-Institution,-District) %>%
+  rename(SPC=Students)
+
+HS2019 <- left_join(HS2019,TAMUSA) %>%
+  select(-County,-Code,-Institution,-District) %>%
+  rename(TAMUSA=Students)
+
+HS2019 <- left_join(HS2019,IWC) %>%
+  select(-County,-Code,-Institution,-District) %>%
+  rename(IWC=Students)
+
+HS2019 <- left_join(HS2019,StMU) %>%
+  select(-County,-Code,-Institution,-District) %>%
+  rename(StMU=Students)
+
+HS2019 <- left_join(HS2019,OLLU) %>%
+  select(-County,-Code,-Institution,-District) %>%
+  rename(OLLU=Students)
+
+HS2019 <- left_join(HS2019,TotGrads) %>%
+  select(-County,-Code,-Institution,-District) %>%
+  rename(TotGrads=Students)
+
+# Calc Percentages by College/Univ
+HS2019$UTSA_Pct <- round(HS2019$UTSA / HS2019$TotGrads * 100, 1)
+HS2019$NWV_Pct <- round(HS2019$NWV / HS2019$TotGrads * 100, 1)  
+HS2019$PAC_Pct <- round(HS2019$PAC / HS2019$TotGrads * 100, 1)  
+HS2019$SAC_Pct <- round(HS2019$SAC / HS2019$TotGrads * 100, 1) 
+HS2019$SPC_Pct <- round(HS2019$SPC / HS2019$TotGrads * 100, 1) 
+HS2019$TAMUSA_Pct <- round(HS2019$TAMUSA / HS2019$TotGrads * 100 , 1) 
+HS2019$IWC_Pct <- round(HS2019$IWC / HS2019$TotGrads * 100 , 1)
+HS2019$StMU_Pct <- round(HS2019$StMU / HS2019$TotGrads * 100 , 1)
+HS2019$OLLU_Pct <- round(HS2019$OLLU / HS2019$TotGrads * 100 , 1)
+
+HS_piv2019 <- HS2019 %>%
+  pivot_longer(cols = UTSA_Pct:OLLU_Pct, names_to = "College", values_to = "Pct")
+
+# Graph
+mycolors = c(brewer.pal(name="Accent", n = 3), brewer.pal(name="Dark2", n = 6))
+Bar_Graph1 <- ggplot(data=HS_piv2019, aes(x = reorder(Name, desc(Name)), y=Pct, fill=College)) +
+  geom_bar(stat="identity") +
+  coord_flip() + 
+  theme_classic() +
+  theme(axis.text.y = element_text(face="bold")) + 
+  scale_fill_manual(values = mycolors) + 
+  #scale_y_continuous(labels = scales::percent) +
+  labs(y="All Graduates (%)") +
+  theme(axis.title.y = element_blank()) +
+  theme(legend.title = element_blank())
+
+# Table
+Table1_df <- HS2019 %>%
+  select(1:11) %>%
+  select("Name", sort(colnames(.))) %>%
+  rename(HS="Name") %>%
+  relocate(TotGrads, .after = HS)
+
+# SANKEY Graph
+HS2019_sk3 <- left_join(HS2019,NoCollege) %>%
+  rename(NoCollege=Students)
+HS2019_sk3 <- HS2019_sk3 %>%
+  mutate("LocalCollege" = rowSums((HS2019_sk3[,2:10]), na.rm = TRUE)) %>%
+  mutate("NonLocal" = TotGrads-LocalCollege-NoCollege)
+
+HS_piv2019_sk3 <- HS2019_sk3 %>%
+  pivot_longer(cols = NoCollege:NonLocal, names_to = "Path", values_to = "Grads")
+
+
+HS2019_Sk <- data.frame(From=HS_piv2019_sk3$Name, 
+                  To=HS_piv2019_sk3$Path, 
+                  Weight=HS_piv2019_sk3$Grads)
+
+HS_test <-  HS2019_Sk[rep(1:nrow(HS2019_Sk), HS2019_Sk$Weight),]
+
+```
+
+### **HS Graduates**  
+A total of `r sum(TotGrads$Students)` students graduated from NISD high schools in the Class of 2019 (the latest data available).  
+
+The interactive graphs/table to the right depict: (1) the number and proportion of graduates by high school and whether they enrolled locally in higher education institutions, non-local institutions, or did not enroll in college; (2) the percent share each local college received from each high school; and, (3) actual counts of HS graduates enrolling locally.
+
+*Note that Trinity University was not listed in the THECB figures as the enrollment counts per high school were below the reporting threshold, and are therefore included with non-local colleges.*  
+
+Key findings include:  
+$*$ A total of `r round(sum(HS2019_sk3$LocalCollege)/sum(HS2019_sk3$TotGrads)*100,0)`% of 2019 NISD HS graduates enrolled in local higher education institutions.  
+$*$ Health Careers HS had the highest percentage of graduates both enrolling in any local institution as well as the most choosing UTSA.  
+$*$ Except for Health Careers, Northwest Vista College (NWV) was the primary institution chosen by NISD graduates.  
+
+
+Column {.tabset}
+-------------------------------------
+### Graph: Grads by Enroll
+```{r echo = FALSE, warning = FALSE, error = FALSE}
+p = alluvial_wide( select(HS_test, From, To)
+                              , fill_by = 'first_variable' )
+
+parcats(p, marginal_histograms = FALSE, data_input = HS_test,hoveron = "category", width = "60%")
+
+```
+
+
+### Graph: Enroll Local College
+
+```{r echo = FALSE, warning = FALSE, error = FALSE}
+ggplotly(Bar_Graph1,tooltip = "y")
+```
+
+### Table: Enroll Local College
+
+```{r echo = FALSE, warning = FALSE, error = FALSE}
+Table1 <-  kbl(Table1_df) %>%
+  kable_styling("hover")
+Table1
+```
+
+Page 3: Local Higher Ed {data-orientation=columns}
+===================================== 
+
+```{r, echo = FALSE, warning = FALSE, error = FALSE, include=FALSE}
+
+# Read 2018 Master Enroll file
+HSGrads2018 <- read_excel("~/UTSA/Intro_to_R/HSGradsEnrolledCampus2018.xlsx", col_types = c("text", "text", "text", "text", "text", "numeric"))
+summary(HSGrads2018)
+
+# Total Grads Count
+TotGrads <- HSGrads2018 %>% 
+  filter(Institution=='Total high school graduates')
+
+#Split into College/Univ dfs
+UTSA <- HSGrads2018 %>% 
+  filter(Institution=='U. OF TEXAS AT SAN ANTONIO (010115)')
+
+NWV <- HSGrads2018 %>% 
+  filter(Institution=='ALAMO CCD NW VISTA COLLEGE (000307)')
+
+SAC <- HSGrads2018 %>% 
+  filter(Institution=='ALAMO CCD SAN ANTONIO COLLEGE (009163)')
+
+PAC <- HSGrads2018 %>% 
+  filter(Institution=='ALAMO CCD PALO ALTO COLLEGE (023413)')
+
+SPC <- HSGrads2018 %>% 
+  filter(Institution=='ALAMO CCD ST. PHILIPS COLLEGE (003608)')
+
+TAMUSA <- HSGrads2018 %>% 
+  filter(Institution=='TEXAS A&M UNIV-SAN ANTONIO (042485)')
+
+IWC <- HSGrads2018 %>% 
+  filter(Institution=='UNIV OF THE INCARNATE WORD (003578)')
+
+StMU <- HSGrads2018 %>% 
+  filter(Institution=="ST. MARY'S UNIVERSITY (003623)")
+
+OLLU <- HSGrads2018 %>% 
+  filter(Institution=="OUR LADY OF THE LAKE UNIV/SA (003598)")
+
+District2018 <- data_frame(College=c("UTSA","NWV","PAC","SAC","SPC","TAMUSA","IWC","StMU","OLLU"),
+                           Year='2018',
+                           Enroll=c(sum(UTSA$Students),sum(NWV$Students),sum(PAC$Students),sum(SAC$Students),
+                                    sum(SPC$Students),sum(TAMUSA$Students),sum(IWC$Students),
+                                    sum(StMU$Students),sum(OLLU$Students)))
+
+# Read 2017 Master Enroll file
+HSGrads2017 <- read_excel("~/UTSA/Intro_to_R/HSGradsEnrolledCampus2017.xlsx", col_types = c("text", "text", "text", "text", "text", "numeric"))
+summary(HSGrads2018)
+
+# Total Grads Count
+TotGrads <- HSGrads2017 %>% 
+  filter(Institution=='Total high school graduates')
+
+#Split into College/Univ dfs
+UTSA <- HSGrads2017 %>% 
+  filter(Institution=='U. OF TEXAS AT SAN ANTONIO (010115)')
+
+NWV <- HSGrads2017 %>% 
+  filter(Institution=='ALAMO CCD NW VISTA COLLEGE (000307)')
+
+SAC <- HSGrads2017 %>% 
+  filter(Institution=='ALAMO CCD SAN ANTONIO COLLEGE (009163)')
+
+PAC <- HSGrads2017 %>% 
+  filter(Institution=='ALAMO CCD PALO ALTO COLLEGE (023413)')
+
+SPC <- HSGrads2017 %>% 
+  filter(Institution=='ALAMO CCD ST. PHILIPS COLLEGE (003608)')
+
+TAMUSA <- HSGrads2017 %>% 
+  filter(Institution=='TEXAS A&M UNIV-SAN ANTONIO (042485)')
+
+TAMUSA <- HSGrads2017 %>% 
+  filter(Institution=='TEXAS A&M UNIV-SAN ANTONIO (042485)')
+
+IWC <- HSGrads2017 %>% 
+  filter(Institution=='UNIV OF THE INCARNATE WORD (003578)')
+
+StMU <- HSGrads2017 %>% 
+  filter(Institution=="ST. MARY'S UNIVERSITY (003623)")
+
+OLLU <- HSGrads2017 %>% 
+  filter(Institution=="OUR LADY OF THE LAKE UNIV/SA (003598)")
+
+District2017 <- data_frame(College=c("UTSA","NWV","PAC","SAC","SPC","TAMUSA","IWC","StMU","OLLU"),
+                           Year='2017',
+                           Enroll=c(sum(UTSA$Students),sum(NWV$Students),sum(PAC$Students),sum(SAC$Students),
+                                    sum(SPC$Students),sum(TAMUSA$Students),sum(IWC$Students),
+                                    sum(StMU$Students),sum(OLLU$Students)))
+
+#Data for Line Graph
+Colleges <- data.frame(rbind(District2017,District2018,District2019))
+
+Line_Graph1 <- ggplot(Colleges, aes(x=Year, y=Enroll, group=College)) +
+  geom_line(aes(color=College)) +
+  geom_point(aes(color=College)) + 
+  theme_classic() +
+  scale_color_manual(values = mycolors) +
+  theme(legend.title = element_blank()) + 
+  scale_y_continuous(limits = c(0, 1500))
+
+Tot_Colleges_2019 <- Colleges %>% filter(Year == 2019)
+Tot_Colleges_2017 <- Colleges %>% filter(Year == 2017)
+Pct_Change <- round((sum(Tot_Colleges_2019$Enroll) - sum(Tot_Colleges_2017$Enroll)) / sum(Tot_Colleges_2017$Enroll) * 100, 0)
+
+
+```
+
+
+
+
+```{r, echo = FALSE, warning = FALSE, error = FALSE, include=FALSE}
+# Outcomes
+HSGradsOutcomes <- read_excel("~/UTSA/Intro_to_R/HSGradsOutcomes.xlsx", 
+                              col_types = c("skip", "text", "skip","text","skip", "text", "numeric","numeric", 
+                                          "skip", "numeric", "numeric","numeric"))
+summary(HSGradsOutcomes)
+
+HSGradsOutcomes$Degree <- HSGradsOutcomes$`Earned Assoc.` + HSGradsOutcomes$`Earned Bac. or Higher`
+
+Outcome <- HSGradsOutcomes %>% 
+  filter(`Bachelor's Degree Granting Institution and College Graduation Status` %in% 
+           c('U. OF TEXAS AT SAN ANTONIO','ALAMO CCD NW VISTA COLLEGE','ALAMO CCD PALO ALTO COLLEGE',
+             'ALAMO CCD SAN ANTONIO COLLEGE','ALAMO CCD ST. PHILIPS COLLEGE','OUR LADY OF THE LAKE UNIV/SA',
+             "ST. MARY'S UNIVERSITY",'UNIV OF THE INCARNATE WORD','TEXAS A&M UNIV-SAN ANTONIO')) %>%
+  rename(College=`Bachelor's Degree Granting Institution and College Graduation Status`) %>%
+  group_by(College) %>%
+  summarize(Grads_From_NISD=sum(Degree)) %>%
+  mutate(College=recode(College,
+                        'U. OF TEXAS AT SAN ANTONIO'="UTSA",
+                        'ALAMO CCD NW VISTA COLLEGE'='NWV',
+                        'ALAMO CCD PALO ALTO COLLEGE'='PAC',
+                        'ALAMO CCD SAN ANTONIO COLLEGE'='SAC',
+                        'ALAMO CCD ST. PHILIPS COLLEGE'='SPC',
+                        'OUR LADY OF THE LAKE UNIV/SA'='OLLU',
+                        "ST. MARY'S UNIVERSITY"='StMU',
+                        'TEXAS A&M UNIV-SAN ANTONIO'='TAMUSA',
+                        'UNIV OF THE INCARNATE WORD'='IWC'))
+
+Bar_Graph2 <- ggplot(data=Outcome, aes(x = College, y=Grads_From_NISD, fill=College)) +
+  geom_bar(stat="identity") +
+  #coord_flip() + 
+  theme_classic() +
+  theme(axis.text.y = element_text(face="bold")) + 
+  scale_fill_manual(values = mycolors) +
+  labs(y="Students  Earning  Degree") +
+  theme(axis.title.x = element_blank()) +
+  theme(legend.position = "none")
+```
+
+Column {data-width=400}
+-------------------------------------
+### **Local Higher Education**
+
+Over the last three years, enrollment of NISD HS graduates in local higher education institutions has risen `r Pct_Change`% percent to `r sum(HS2019_sk3$LocalCollege)` students.
+
+The interactive graphs/table to the right depict: (1) the trend in NISD graduates enrolling locally; and, (2) the number of students earning at least one degree within 6 years (Class of 2008-2010, the latest figures available).  
+
+Key findings include:  
+$*$ Northwest Vista College (NWV) comprises more than half of the total NISD graduate enrollees.  
+$*$ The number of NISD graduates enrolling at UTSA has declined each of the last two years while San Antonio College (SAC) nearly doubled in 2019 enrollments over 2018 levels.  
+$*$ UTSA enrollees had the highest number of degrees earned, followed closely by NWV.
+
+
+Column {.tabset}
+-------------------------------------
+### Graph: College Trends
+
+
+```{r echo = FALSE, warning = FALSE, error = FALSE}
+ggplotly(Line_Graph1,tooltip = "y")
+```
+
+### Graph: College Outcomes
+
+```{r echo = FALSE, warning = FALSE, error = FALSE}
+ggplotly(Bar_Graph2,tooltip = "y")
+```
+
